@@ -1,0 +1,275 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Dashboard - AnimeHub Admin{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary">Print</button>
+        </div>
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle">
+            <i class="fas fa-calendar me-1"></i>
+            This week
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Users</h6>
+                        <h2 class="display-4">{{ user_count }}</h2>
+                    </div>
+                    <i class="fas fa-users fa-3x"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a href="{{ url_for('admin.users') }}" class="text-white text-decoration-none">View Details</a>
+                <div><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Anime Entries</h6>
+                        <h2 class="display-4">{{ anime_count }}</h2>
+                    </div>
+                    <i class="fas fa-tv fa-3x"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a href="{{ url_for('admin.anime') }}" class="text-white text-decoration-none">View Details</a>
+                <div><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Manga Entries</h6>
+                        <h2 class="display-4">{{ manga_count }}</h2>
+                    </div>
+                    <i class="fas fa-book fa-3x"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a href="{{ url_for('admin.manga') }}" class="text-dark text-decoration-none">View Details</a>
+                <div><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Comments</h6>
+                        <h2 class="display-4">{{ comment_count }}</h2>
+                    </div>
+                    <i class="fas fa-comments fa-3x"></i>
+                </div>
+            </div>
+            <div class="card-footer d-flex align-items-center justify-content-between">
+                <a href="#" class="text-white text-decoration-none">View Details</a>
+                <div><i class="fas fa-angle-right"></i></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Latest Users -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <i class="fas fa-user-plus me-1"></i>
+                Latest Registrations
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in latest_users %}
+                                <tr>
+                                    <td>{{ user.display_name or user.username }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_user', user_id=user.user_id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No users found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.users') }}" class="btn btn-primary btn-sm">View All Users</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Comments -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <i class="fas fa-comment-alt me-1"></i>
+                Latest Comments
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Content</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for comment in latest_comments %}
+                                <tr>
+                                    <td>{{ comment.user.display_name or comment.user.username }}</td>
+                                    <td>{{ comment.comment_text[:30] }}{% if comment.comment_text|length > 30 %}...{% endif %}</td>
+                                    <td>{{ comment.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No comments found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="#" class="btn btn-primary btn-sm">View All Comments</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Popular Anime -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <i class="fas fa-star me-1"></i>
+                Popular Anime
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Score</th>
+                                <th>Members</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for anime in popular_anime %}
+                                <tr>
+                                    <td>{{ anime.title_romaji }}</td>
+                                    <td>{{ anime.average_score }}</td>
+                                    <td>{{ anime.members_count }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_anime', anime_id=anime.anime_id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No anime found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.anime') }}" class="btn btn-primary btn-sm">View All Anime</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Popular Manga -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header bg-dark">
+                <i class="fas fa-star me-1"></i>
+                Popular Manga
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Score</th>
+                                <th>Members</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for manga in popular_manga %}
+                                <tr>
+                                    <td>{{ manga.title_romaji }}</td>
+                                    <td>{{ manga.average_score }}</td>
+                                    <td>{{ manga.members_count }}</td>
+                                    <td>
+                                        <a href="{{ url_for('admin.edit_manga', manga_id=manga.manga_id) }}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No manga found</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('admin.manga') }}" class="btn btn-primary btn-sm">View All Manga</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

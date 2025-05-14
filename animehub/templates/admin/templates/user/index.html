@@ -1,0 +1,252 @@
+{# templates/user/index.html #}
+{% extends "user/base.html" %} {# Giả sử base.html của user nằm trong templates/user/ #}
+
+{% block title %}AnimeHub - Your Anime & Manga Community{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    {# Jumbotron Section #}
+    <div class="p-5 mb-4 bg-body-tertiary rounded-3 shadow-sm">
+        <div class="container-fluid py-3">
+            <h1 class="display-5 fw-bold">Welcome to AnimeHub!</h1>
+            <p class="col-md-10 fs-5">The ultimate platform to discover, track, and discuss your favorite anime and manga. Join our community, create personalized lists, rate shows, and connect with fellow fans.</p>
+            <hr class="my-4">
+            {% if not current_user.is_authenticated %}
+            <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                <a class="btn btn-primary btn-lg px-4 me-md-2" href="{{ url_for('user.register') }}" role="button">Register Now</a>
+                <a class="btn btn-outline-secondary btn-lg px-4" href="{{ url_for('user.login') }}" role="button">Sign In</a>
+            </div>
+            {% else %}
+            <p class="fs-5">Explore the latest content or manage <a href="{{ url_for('user.user_lists_page') }}">your lists</a>.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Latest Anime Section #}
+    {% if latest_anime %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="section-title h4">Latest Anime</h2>
+            <a href="{{ url_for('user.anime_list') }}" class="btn btn-sm btn-outline-secondary">View All Anime »</a>
+        </div>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+            {% for anime_item in latest_anime %}
+            <div class="col">
+                <div class="card h-100 shadow-hover">
+                    <a href="{{ url_for('user.anime_detail', anime_id=anime_item.anime_id) }}" class="text-decoration-none">
+                        {% if anime_item.cover_image_url %}
+                            <img src="{{ anime_item.cover_image_url }}" class="card-img-top" alt="{{ anime_item.title_romaji }}" style="height: 300px; object-fit: cover;">
+                        {% else %}
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <i class="fas fa-image fa-3x text-white-50"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    <div class="card-body p-3">
+                        <h6 class="card-title mb-1" style="font-size: 0.9rem;">
+                            <a href="{{ url_for('user.anime_detail', anime_id=anime_item.anime_id) }}" class="text-decoration-none text-light">
+                                {{ anime_item.title_romaji | truncate(35, True) }}
+                            </a>
+                        </h6>
+                        <p class="card-text small text-muted mb-1">{{ anime_item.type }} • {{ anime_item.status.replace('_', ' ')|title }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 p-3 pt-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-primary rounded-pill">{{ "%.1f"|format(anime_item.average_score) if anime_item.average_score else 'N/A' }}</span>
+                            {% if anime_item.episodes %}
+                            <small class="text-muted">{{ anime_item.episodes }} ep{% if anime_item.episodes != 1 %}s{% endif %}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% else %}
+    <div class="alert alert-info">No latest anime to display yet.</div>
+    {% endif %}
+
+    {# Popular Anime Section #}
+    {% if popular_anime %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="section-title h4">Popular Anime</h2>
+            {# <a href="{{ url_for('user.anime_list', sort='popularity') }}" class="btn btn-sm btn-outline-secondary">View All Popular »</a> #}
+        </div>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+            {% for anime_item in popular_anime %}
+            <div class="col">
+                <div class="card h-100 shadow-hover">
+                     <a href="{{ url_for('user.anime_detail', anime_id=anime_item.anime_id) }}" class="text-decoration-none">
+                        {% if anime_item.cover_image_url %}
+                            <img src="{{ anime_item.cover_image_url }}" class="card-img-top" alt="{{ anime_item.title_romaji }}" style="height: 300px; object-fit: cover;">
+                        {% else %}
+                             <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                                <i class="fas fa-image fa-3x text-white-50"></i>
+                            </div>
+                        {% endif %}
+                    </a>
+                    <div class="card-body p-3">
+                        <h6 class="card-title mb-1" style="font-size: 0.9rem;">
+                            <a href="{{ url_for('user.anime_detail', anime_id=anime_item.anime_id) }}" class="text-decoration-none text-light">
+                                {{ anime_item.title_romaji | truncate(35, True) }}
+                            </a>
+                        </h6>
+                         <p class="card-text small text-muted mb-1">
+                            <i class="fas fa-users me-1"></i> {{ anime_item.members_count or 0 }} members
+                        </p>
+                    </div>
+                     <div class="card-footer bg-transparent border-top-0 p-3 pt-0">
+                         <span class="badge bg-primary rounded-pill">{{ "%.1f"|format(anime_item.average_score) if anime_item.average_score else 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% else %}
+    <div class="alert alert-info">No popular anime to display yet.</div>
+    {% endif %}
+
+    {# Latest Manga Section #}
+    {% if latest_manga %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="section-title h4">Latest Manga</h2>
+            <a href="{{ url_for('user.manga_list') }}" class="btn btn-sm btn-outline-secondary">View All Manga »</a>
+        </div>
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-3">
+            {% for manga_item in latest_manga %}
+            <div class="col">
+                <div class="card h-100 shadow-hover">
+                    <a href="{{ url_for('user.manga_detail', manga_id=manga_item.manga_id) }}" class="text-decoration-none">
+                        <img src="{{ manga_item.cover_image_url or url_for('static', filename='img/placeholder_manga.png') }}"
+                             class="card-img-top" alt="{{ manga_item.title_romaji }}" style="height: 300px; object-fit: cover;">
+                    </a>
+                    <div class="card-body p-3">
+                        <h6 class="card-title mb-1" style="font-size: 0.9rem;">
+                            <a href="{{ url_for('user.manga_detail', manga_id=manga_item.manga_id) }}" class="text-decoration-none text-light">
+                                {{ manga_item.title_romaji | truncate(35, True) }}
+                            </a>
+                        </h6>
+                        <p class="card-text small text-muted mb-1">
+                            <span class="badge bg-success me-1">{{ manga_item.type }}</span>
+                            <span class="badge {% if manga_item.status == 'currently_publishing' %}bg-primary{% elif manga_item.status == 'not_yet_published' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ manga_item.status.replace('_', ' ')|title }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0 p-3 pt-0">
+                        {% if manga_item.average_score and manga_item.average_score > 0 %}
+                            <span class="badge bg-primary rounded-pill"><i class="fas fa-star"></i> {{ "%.1f"|format(manga_item.average_score) }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary rounded-pill">N/A</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% else %}
+    <div class="alert alert-info">No latest manga to display yet.</div>
+    {% endif %}
+
+    {# Community Highlights Section (Fanart & Fanfiction side-by-side) #}
+    <div class="row mt-4">
+        <!-- Latest Fanart Section -->
+        {% if latest_fanart %}
+        <div class="col-md-6 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="section-title h4">Latest Fanart</h2>
+                <a href="{{ url_for('user.fanart_list') }}" class="btn btn-sm btn-outline-secondary">View All Fanart »</a>
+            </div>
+            <div class="row row-cols-1 row-cols-sm-2 g-3">
+                {% for fanart_item in latest_fanart %}
+                <div class="col">
+                    <div class="card h-100 shadow-hover">
+                        <a href="{{ url_for('user.fanart_detail', fanart_id=fanart_item.fanart_id) }}">
+                            <img src="{{ fanart_item.image_url }}" class="card-img-top" alt="{{ fanart_item.title }}" style="height: 220px; object-fit: cover;">
+                        </a>
+                        <div class="card-body p-2">
+                            <h6 class="card-title mb-0" style="font-size: 0.85rem;">
+                                 <a href="{{ url_for('user.fanart_detail', fanart_id=fanart_item.fanart_id) }}" class="text-decoration-none text-light">
+                                    {{ fanart_item.title | truncate(30, True) or 'Untitled' }}
+                                 </a>
+                            </h6>
+                            <small class="text-muted">by {{ fanart_item.author.username }}</small>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="mt-3">
+                <a href="{{ url_for('user.create_fanart') }}" class="btn btn-primary btn-sm">Share Your Fanart</a>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+         <div class="col-md-6 mb-4">
+             <h2 class="section-title h4">Latest Fanart</h2>
+            <div class="alert alert-info">No fanart available yet.</div>
+        </div>
+        {% endif %}
+
+        <!-- Latest Fanfiction Section -->
+        {% if latest_fanfiction %}
+        <div class="col-md-6 mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="section-title h4">Latest Fanfiction</h2>
+                <a href="{{ url_for('user.fanfiction_list') }}" class="btn btn-sm btn-outline-secondary">View All Fanfiction »</a>
+            </div>
+            <div class="list-group">
+                {% for fanfic_item in latest_fanfiction %}
+                <a href="{{ url_for('user.fanfiction_detail', fanfiction_id=fanfic_item.fanfiction_id) }}" class="list-group-item list-group-item-action bg-dark-subtle text-light">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1">{{ fanfic_item.title | truncate(45, True) }}</h6>
+                        <small class="text-muted">{{ fanfic_item.created_at.strftime('%b %d, %Y') }}</small>
+                    </div>
+                    <p class="mb-1 small">{{ fanfic_item.summary | truncate(70, True) }}</p>
+                    <small class="text-muted">by {{ fanfic_item.author.username }} • {{ fanfic_item.word_count }} words</small>
+                </a>
+                {% endfor %}
+            </div>
+            {% if current_user.is_authenticated %}
+            <div class="mt-3">
+                <a href="{{ url_for('user.create_fanfiction') }}" class="btn btn-primary btn-sm">Write Fanfiction</a>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+         <div class="col-md-6 mb-4">
+            <h2 class="section-title h4">Latest Fanfiction</h2>
+            <div class="alert alert-info">No fanfiction available yet.</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }} {# Giữ lại scripts từ base template nếu có #}
+<style>
+    .shadow-hover:hover {
+        box-shadow: 0 .5rem 1rem rgba(var(--bs-emphasis-color-rgb),.25)!important; /* Nổi bật hơn khi hover */
+        transition: box-shadow .2s ease-in-out;
+    }
+    .section-title {
+        border-bottom: 2px solid var(--bs-primary);
+        padding-bottom: 0.25rem;
+        display: inline-block;
+        margin-bottom: 1.5rem !important;
+    }
+    .content-card .card-img-top { /* Thêm class content-card cho card anime/manga */
+        transition: transform 0.2s ease-in-out;
+    }
+    .content-card:hover .card-img-top {
+        transform: scale(1.03);
+    }
+</style>
+{% endblock %}

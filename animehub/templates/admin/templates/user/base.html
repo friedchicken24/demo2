@@ -1,0 +1,142 @@
+{# templates/user/base.html #}
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AnimeHub{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    {% block head_styles %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('user.index') }}">
+                 <i class="fas fa-tv me-2"></i>AnimeHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'user.index' %}active{% endif %}" href="{{ url_for('user.index') }}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'user.anime_list' %}active{% endif %}" href="{{ url_for('user.anime_list') }}">Anime</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'user.manga_list' %}active{% endif %}" href="{{ url_for('user.manga_list') }}">Manga</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint.startswith('user.fanart') or request.endpoint.startswith('user.fanfiction') %}active{% endif %}" href="#" id="navbarCommunity" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Community
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarCommunity">
+                            <li><a class="dropdown-item" href="{{ url_for('user.fanart_list') }}">Fanart</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.fanfiction_list') }}">Fanfiction</a></li>
+                            {# <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Forums</a></li> #}
+                        </ul>
+                    </li>
+                </ul>
+                <form class="d-flex me-3" action="{{ url_for('user.anime_list') }}" method="GET">
+                    <input class="form-control form-control-sm me-2" type="search" name="search" placeholder="Search anime..." aria-label="Search" value="{{ request.args.get('search', '') }}">
+                    <button class="btn btn-outline-light btn-sm" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                        <div class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if request.endpoint.startswith('user.profile') or request.endpoint.startswith('user.user_lists') %}active{% endif %}" href="#" id="navbarUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="{{ current_user.profile_picture_url or url_for('static', filename='img/default_avatar.png') }}" alt="Avatar" width="24" height="24" class="rounded-circle me-1">
+                                {{ current_user.display_name or current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUser">
+                                <li><a class="dropdown-item" href="{{ url_for('user.profile') }}"><i class="fas fa-user-circle me-2"></i>My Profile</a></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.user_lists_page') }}"><i class="fas fa-list-alt me-2"></i>My Lists</a></li>
+                                {% if current_user.roles and 'admin' in [role.role_name for role in current_user.roles] %}
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}"><i class="fas fa-tachometer-alt me-1"></i> Admin Panel</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('user.logout') }}"><i class="fas fa-sign-out-alt me-1"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a class="nav-link {% if request.endpoint == 'user.login' %}active{% endif %}" href="{{ url_for('user.login') }}">Login</a>
+                        <a class="nav-link {% if request.endpoint == 'user.register' %}active{% endif %}" href="{{ url_for('user.register') }}">Register</a>
+                    {% endif %}
+                 </div>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+    
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer class="footer mt-auto py-4 bg-dark text-white-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5>About AnimeHub</h5>
+                    <p class="small">The ultimate anime and manga community platform. Discover, track, and discuss your favorites.</p>
+                </div>
+                <div class="col-md-2 col-6 mb-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('user.index') }}" class="text-white-50">Home</a></li>
+                        <li><a href="{{ url_for('user.anime_list') }}" class="text-white-50">Anime</a></li>
+                        <li><a href="{{ url_for('user.manga_list') }}" class="text-white-50">Manga</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <h5>Community</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('user.fanart_list') }}" class="text-white-50">Fanart</a></li>
+                        <li><a href="{{ url_for('user.fanfiction_list') }}" class="text-white-50">Fanfiction</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-3">
+                     <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white-50 me-2"><i class="fab fa-twitter fa-lg"></i></a>
+                        <a href="#" class="text-white-50 me-2"><i class="fab fa-facebook fa-lg"></i></a>
+                        <a href="#" class="text-white-50 me-2"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-white-50"><i class="fab fa-discord fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col text-center">
+                     <p class="mb-0 small">© <span id="current-year"></span> AnimeHub. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

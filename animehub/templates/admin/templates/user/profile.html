@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if user.user_id == current_user.user_id %}
+        My Profile - AnimeHub
+    {% else %}
+        {{ user.display_name }}'s Profile - AnimeHub
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Profile Header -->
+    <div class="card mb-4">
+        <div class="profile-header bg-dark"></div>
+        <div class="card-body text-center pt-0">
+            <img src="{{ user.profile_picture_url or url_for('static', filename='img/user_placeholder.svg') }}" 
+                 alt="{{ user.display_name }}" class="profile-avatar mb-3">
+            <h2 class="fw-bold">{{ user.display_name }}</h2>
+            <p class="text-muted">@{{ user.username }}</p>
+            
+            {% if user.bio %}
+                <div class="bio-section mb-3">
+                    <p>{{ user.bio }}</p>
+                </div>
+            {% endif %}
+            
+            <div class="user-stats d-flex justify-content-center gap-4 mb-3">
+                <div class="text-center">
+                    <h5 class="mb-0">{{ user.user_lists|length }}</h5>
+                    <small class="text-muted">Lists</small>
+                </div>
+                <div class="text-center">
+                    <h5 class="mb-0">{{ user.fanarts|length }}</h5>
+                    <small class="text-muted">Fanarts</small>
+                </div>
+                <div class="text-center">
+                    <h5 class="mb-0">{{ user.fanfictions|length }}</h5>
+                    <small class="text-muted">Fanfictions</small>
+                </div>
+            </div>
+            
+            {% if user.user_id == current_user.user_id %}
+                <a href="{{ url_for('user.profile') }}" class="btn btn-primary">Edit Profile</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if user.user_id == current_user.user_id %}
+        <!-- Edit Profile Form (only if viewing own profile) -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="card-title mb-0">Edit Profile</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('user.profile') }}">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        {{ form.display_name.label(class="form-label") }}
+                        {{ form.display_name(class="form-control") }}
+                        {% if form.display_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.display_name.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.profile_picture_url.label(class="form-label") }}
+                        {{ form.profile_picture_url(class="form-control") }}
+                        {% if form.profile_picture_url.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.profile_picture_url.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="form-text text-muted">Enter a URL to an image (will be displayed at 150x150px)</small>
+                        
+                        {% if form.profile_picture_url.data %}
+                            <div class="mt-2">
+                                <img src="{{ form.profile_picture_url.data }}" alt="Profile Preview" 
+                                     class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.bio.label(class="form-label") }}
+                        {{ form.bio(class="form-control", rows=4) }}
+                        {% if form.bio.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.bio.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <hr>
+                    
+                    <h5>Change Password</h5>
+                    <div class="mb-3">
+                        {{ form.current_password.label(class="form-label") }}
+                        {{ form.current_password(class="form-control") }}
+                        {% if form.current_password.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.current_password.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form.new_password.label(class="form-label") }}
+                            {{ form.new_password(class="form-control") }}
+                            {% if form.new_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.new_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.confirm_new_password.label(class="form-label") }}
+                            {{ form.confirm_new_password(class="form-control") }}
+                            {% if form.confirm_new_password.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.confirm_new_password.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% else %}
+        <!-- User's Lists (if viewing someone else's profile) -->
+        {% if user_lists %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h4 class="card-title mb-0">{{ user.display_name }}'s Lists</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for user_list in user_lists %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ user_list.list_name }}</h5>
+                                        {% if user_list.description %}
+                                            <p class="card-text">{{ user_list.description }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div class="card-footer">
+                                        <a href="{{ url_for('user.view_list', list_id=user_list.list_id) }}" 
+                                           class="btn btn-sm btn-primary">View List</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- User's Fanart -->
+        {% if fanarts %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">{{ user.display_name }}'s Fanart</h4>
+                    <a href="{{ url_for('user.fanart_list') }}?user={{ user.user_id }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        {% for fanart in fanarts %}
+                            <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                                <div class="card h-100 fanart-item">
+                                    <a href="{{ url_for('user.fanart_detail', fanart_id=fanart.fanart_id) }}">
+                                        <img src="{{ fanart.image_url }}" class="card-img-top fanart-image" alt="{{ fanart.title }}">
+                                    </a>
+                                    <div class="card-body p-2">
+                                        <h6 class="card-title mb-0 text-truncate">{{ fanart.title or 'Untitled' }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <!-- User's Fanfiction -->
+        {% if fanfictions %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="card-title mb-0">{{ user.display_name }}'s Fanfiction</h4>
+                    <a href="{{ url_for('user.fanfiction_list') }}?user={{ user.user_id }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for fanfic in fanfictions %}
+                            <a href="{{ url_for('user.fanfiction_detail', fanfiction_id=fanfic.fanfiction_id) }}" 
+                               class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ fanfic.title }}</h5>
+                                    <small>{{ fanfic.created_at.strftime('%Y-%m-%d') }}</small>
+                                </div>
+                                {% if fanfic.summary %}
+                                    <p class="mb-1">{{ fanfic.summary[:100] }}{% if fanfic.summary|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                <small>{{ fanfic.word_count }} words</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

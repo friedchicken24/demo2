@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Anime List - AnimeHub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        background-color: rgba(33, 37, 41, 0.9);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Anime Database</h1>
+    
+    <!-- Filter Form -->
+    <div class="filter-section mb-4">
+        <form method="GET" action="{{ url_for('user.anime_list') }}" id="animeFilterForm">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    {{ form.search.label(class="form-label") }}
+                    <div class="input-group">
+                        {{ form.search(class="form-control", placeholder="Search titles...") }}
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-2">
+                    {{ form.type.label(class="form-label") }}
+                    {{ form.type(class="form-select") }}
+                </div>
+                
+                <div class="col-md-2">
+                    {{ form.status.label(class="form-label") }}
+                    {{ form.status(class="form-select") }}
+                </div>
+                
+                <div class="col-md-2">
+                    <label for="genre" class="form-label">Genre</label>
+                    <select name="genre" id="genre" class="form-select">
+                        <option value="">All Genres</option>
+                        {% for genre in genres %}
+                        <option value="{{ genre.genre_id }}" {% if request.args.get('genre', '')|int == genre.genre_id %}selected{% endif %}>
+                            {{ genre.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="col-md-2">
+                    {{ form.sort.label(class="form-label") }}
+                    {{ form.sort(class="form-select") }}
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Results -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-5 g-4">
+        {% for anime in animes.items %}
+            <div class="col">
+                <div class="card h-100 anime-card">
+                    <img src="{{ anime.cover_image_url or url_for('static', filename='img/anime_placeholder.svg') }}" 
+                         class="card-img-top" alt="{{ anime.title_romaji }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ anime.title_romaji }}</h5>
+                        <p class="card-text text-muted">
+                            <span class="badge bg-primary">{{ anime.type }}</span>
+                            <span class="badge {% if anime.status == 'currently_airing' %}bg-success{% elif anime.status == 'not_yet_aired' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                {{ anime.status|replace('_', ' ')|title }}
+                            </span>
+                        </p>
+                        {% if anime.episodes %}
+                            <p class="card-text"><small>Episodes: {{ anime.episodes }}</small></p>
+                        {% endif %}
+                        {% if anime.average_score > 0 %}
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-star text-warning me-1"></i>
+                                <span>{{ anime.average_score }}/10</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer">
+                        <a href="{{ url_for('user.anime_detail', anime_id=anime.anime_id) }}" 
+                           class="btn btn-sm btn-primary d-block">View Details</a>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No anime found matching your criteria. Try adjusting your filters.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if animes.pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if animes.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('user.anime_list', page=animes.prev_num, search=request.args.get('search', ''), type=request.args.get('type', ''), status=request.args.get('status', ''), genre=request.args.get('genre', ''), sort=request.args.get('sort', '')) }}">
+                            Previous
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in animes.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == animes.page %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('user.anime_list', page=page_num, search=request.args.get('search', ''), type=request.args.get('type', ''), status=request.args.get('status', ''), genre=request.args.get('genre', ''), sort=request.args.get('sort', '')) }}">
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if animes.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('user.anime_list', page=animes.next_num, search=request.args.get('search', ''), type=request.args.get('type', ''), status=request.args.get('status', ''), genre=request.args.get('genre', ''), sort=request.args.get('sort', '')) }}">
+                            Next
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/anime.js') }}"></script>
+{% endblock %}
