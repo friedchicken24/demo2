@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AnimeHub Admin{% endblock %}</title>
+    <!-- Bootstrap CSS from Replit's CDN -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Font Awesome for icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    {% block styles %}{% endblock %}
+</head>
+<body>
+    <!-- Admin Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">
+                <i class="fas fa-shield-alt me-2"></i>AnimeHub Admin
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarAdmin" aria-controls="navbarAdmin" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarAdmin">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarUsers" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-users me-1"></i>Users
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarUsers">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.users') }}">All Users</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}">Add User</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.roles') }}">Roles</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarContent" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-film me-1"></i>Content
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarContent">
+                            <li><a class="dropdown-item" href="{{ url_for('admin.anime') }}">Anime</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('admin.manga') }}">Manga</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Genres</a></li>
+                            <li><a class="dropdown-item" href="#">Studios</a></li>
+                            <li><a class="dropdown-item" href="#">Creators</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarCommunity" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-comments me-1"></i>Community
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarCommunity">
+                            <li><a class="dropdown-item" href="#">Comments</a></li>
+                            <li><a class="dropdown-item" href="#">Fanart</a></li>
+                            <li><a class="dropdown-item" href="#">Fanfiction</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-cog me-1"></i>Settings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('user.index') }}" target="_blank">
+                            <i class="fas fa-external-link-alt me-1"></i>View Site
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>{{ current_user.display_name or current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUser">
+                            <li><a class="dropdown-item" href="{{ url_for('user.profile') }}">My Profile</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('user.logout') }}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container-fluid mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                                <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.users') }}">
+                                <i class="fas fa-users me-1"></i>Users
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.roles') }}">
+                                <i class="fas fa-user-tag me-1"></i>Roles
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.anime') }}">
+                                <i class="fas fa-tv me-1"></i>Anime
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('admin.manga') }}">
+                                <i class="fas fa-book me-1"></i>Manga
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-music me-1"></i>Anime Songs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-paint-brush me-1"></i>Fanart
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-pen-fancy me-1"></i>Fanfiction
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-comment me-1"></i>Comments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-tags me-1"></i>Tags
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js (for dashboard) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

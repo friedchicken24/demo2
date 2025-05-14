@@ -1,0 +1,111 @@
+/* Admin Styles for AnimeHub */
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0; /* Height of navbar */
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+}
+
+.sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+    color: #f8f9fa;
+    padding: .75rem 1rem;
+    border-radius: 4px;
+    margin: 0.2rem 0.5rem;
+}
+
+.sidebar .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .nav-link.active {
+    background-color: var(--bs-primary);
+}
+
+/* Stats Cards */
+.card {
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    font-weight: 600;
+}
+
+.card-footer {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+/* Tables */
+.table-responsive {
+    border-radius: 0.25rem;
+}
+
+.table th {
+    background-color: var(--bs-dark);
+    color: var(--bs-light);
+    border-color: #444;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Forms */
+.form-control, .form-select {
+    background-color: #2b3035;
+    border-color: #444;
+    color: #f8f9fa;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #2b3035;
+    border-color: var(--bs-primary);
+    color: #f8f9fa;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+/* Main content adjustment */
+@media (min-width: 768px) {
+    .ms-sm-auto {
+        margin-left: 16.67% !important;
+    }
+}
+
+@media (min-width: 992px) {
+    .ms-sm-auto {
+        margin-left: 16.67% !important;
+    }
+}
+
+/* Chart containers */
+.chart-container {
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+/* Action buttons */
+.btn-action {
+    margin-right: 5px;
+}
